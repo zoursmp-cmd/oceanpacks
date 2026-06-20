@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Creates the Express server backend for the Ocean Packs store, securing the API key and proxying player check and purchase actions to the Minecraft server.",
+  "updatedAt": "2026-06-20T16:24:15.100401Z"
+}

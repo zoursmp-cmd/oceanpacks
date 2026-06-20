@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Creates .gitignore for ocean-packs to ignore node_modules.",
+  "updatedAt": "2026-06-20T16:36:29.792047200Z"
+}

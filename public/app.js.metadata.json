@@ -1,0 +1,5 @@
+{
+  "artifactType": "ARTIFACT_TYPE_OTHER",
+  "summary": "Creates app.js to control the Ocean Packs UI, handling catalog rendering, player connection checks, API purchase requests, and displaying status modals.",
+  "updatedAt": "2026-06-20T16:24:48.277345600Z"
+}
