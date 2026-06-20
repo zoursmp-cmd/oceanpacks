@@ -4,131 +4,141 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ocean Packs | Official Ocean SMP Store</title>
-  <!-- Google Fonts: Outfit & Inter -->
+  <!-- Google Fonts: Inter (Apple-like body) and Outfit (Sleek headings) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Ambient background glow particles -->
-  <div class="bg-glow bg-glow-1"></div>
-  <div class="bg-glow bg-glow-2"></div>
+  <!-- Apple style gradient background mesh -->
+  <div class="mesh-glow mesh-1"></div>
+  <div class="mesh-glow mesh-2"></div>
 
-  <!-- Navbar -->
-  <header>
-    <div class="header-container">
+  <!-- Apple style Global Navigation Bar -->
+  <header class="apple-nav">
+    <div class="nav-container">
       <div class="logo">
-        <span class="logo-accent">OCEAN</span> PACKS
+        Ocean Packs
       </div>
-      <nav>
-        <span class="nav-status">Server IP: <strong id="server-ip">play.oceansmp.com</strong></span>
-      </nav>
+      <div class="nav-links">
+        <a href="#catalog">Catalog</a>
+        <a href="https://github.com/zoursmp-cmd/oceanpacks" target="_blank">Source Code</a>
+      </div>
+      <div class="server-ip-pill">
+        <span class="dot"></span> play.oceansmp.online
+      </div>
     </div>
   </header>
 
-  <!-- Hero Section & Username Connection -->
-  <section class="hero-section">
-    <div class="hero-content">
-      <h1>Unlock Premium In-Game Packs</h1>
-      <p class="hero-subtitle">Purchase exclusive custom items, keys, and potions directly using your Ocean SMP in-game balance.</p>
+  <!-- Hero / Introduction -->
+  <section class="apple-hero">
+    <div class="hero-container">
+      <h1 class="hero-title">Ocean Packs.</h1>
+      <h2 class="hero-subtitle">Instantly delivered. Powered by in-game balance.</h2>
+      <p class="hero-desc">Elevate your Ocean SMP gameplay. Connect your username to securely exchange your Vault cash for premium keys, tools, and potions.</p>
       
-      <!-- Connection Card -->
-      <div class="connect-card" id="connect-card">
-        <div id="connect-form">
-          <h3>Connect Your Character</h3>
-          <p class="card-hint">Enter your Minecraft username to verify your balance and enable instant item delivery.</p>
-          <div class="input-group">
-            <input type="text" id="username-input" placeholder="Minecraft Username" autocomplete="off">
-            <button id="connect-btn">Connect Account</button>
+      <!-- Glassmorphic Connect Profile Widget -->
+      <div class="apple-connect-widget" id="connect-card">
+        <div id="connect-form" class="connect-form">
+          <div class="form-header">
+            <h3>Sign in with Username</h3>
+            <p>Connect your Minecraft character to browse and unlock items.</p>
+          </div>
+          <div class="input-row">
+            <input type="text" id="username-input" placeholder="Minecraft Username" autocomplete="off" required>
+            <button id="connect-btn">Connect</button>
           </div>
           <div id="connect-error" class="error-msg hide"></div>
         </div>
 
-        <!-- Connected Profile Display -->
-        <div id="profile-display" class="profile-container hide">
-          <div class="profile-header">
-            <div class="avatar-wrapper">
+        <!-- Apple Style Profile Badge -->
+        <div id="profile-display" class="profile-badge hide">
+          <div class="profile-card-top">
+            <div class="player-avatar-bg">
               <img id="player-avatar" src="" alt="Player Avatar">
             </div>
-            <div class="profile-details">
-              <div class="username-row">
-                <span id="player-username">NotKxnt</span>
-                <span class="status-badge" id="player-status">Online</span>
+            <div class="player-info">
+              <div class="name-status">
+                <span id="player-username">notzour</span>
+                <span class="status-indicator online" id="player-status">Online</span>
               </div>
-              <div class="rank-row">
-                <span class="badge" id="player-rank">MEMBER</span>
-              </div>
+              <span class="rank-badge" id="player-rank">Owner</span>
             </div>
           </div>
-          <div class="profile-stats">
-            <div class="stat-card">
-              <span class="stat-label">In-Game Balance</span>
-              <span class="stat-value" id="player-balance">$0.00</span>
+          <div class="profile-card-bottom">
+            <div class="balance-container">
+              <span class="balance-lbl">Available Balance</span>
+              <span class="balance-val" id="player-balance">$1,011,876,185</span>
             </div>
+            <button id="disconnect-btn" class="secondary-btn">Disconnect</button>
           </div>
-          <button id="disconnect-btn" class="secondary-btn">Switch Account</button>
         </div>
       </div>
     </div>
   </section>
 
   <!-- Catalog Section -->
-  <main class="store-section">
-    <div class="section-header">
-      <h2>Packs & Custom Items Catalog</h2>
-      <p>Browse our catalog of items. Connecting your account above is required to purchase.</p>
-    </div>
+  <section class="catalog-section" id="catalog">
+    <div class="catalog-container">
+      <div class="catalog-header">
+        <h2>Featured Items</h2>
+        <p>Unlock packs directly in-game. Delivery is processed instantly.</p>
+      </div>
 
-    <!-- Items Grid -->
-    <div class="items-grid" id="items-grid">
-      <!-- Cards will be populated dynamically -->
-      <div class="loading-spinner">Loading catalog...</div>
+      <!-- Glassmorphic Items Grid -->
+      <div class="items-grid" id="items-grid">
+        <div class="loading-spinner">Loading store catalog...</div>
+      </div>
     </div>
-  </main>
+  </section>
 
-  <footer>
+  <!-- Footer -->
+  <footer class="apple-footer">
     <div class="footer-container">
-      <p>&copy; 2026 Ocean SMP. All rights reserved. Not affiliated with Mojang AB or Microsoft.</p>
+      <p>Copyright &copy; 2026 Ocean SMP. All rights reserved. This site is not affiliated with Mojang Studios or Microsoft.</p>
     </div>
   </footer>
 
-  <!-- Purchase Confirm/Success Modal -->
+  <!-- Apple-styled Purchase Modal -->
   <div class="modal-overlay hide" id="modal-overlay">
     <div class="modal-card">
-      <div class="success-icon-wrapper">
-        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-          <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
-          <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-        </svg>
+      <div class="modal-header">
+        <div class="success-ring">
+          <svg class="checkmark" viewBox="0 0 52 52">
+            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+            <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+          </svg>
+        </div>
+        <h2>Transaction Complete</h2>
+        <p>Your pack has been added to your inventory.</p>
       </div>
-      <h2 id="modal-title">Purchase Successful!</h2>
-      <p id="modal-desc">Your item has been delivered instantly to your inventory.</p>
       
-      <div class="receipt-box">
-        <div class="receipt-line">
-          <span>Item:</span>
-          <strong id="receipt-item-name">Void Totem</strong>
+      <div class="receipt-card">
+        <div class="receipt-row">
+          <span>Item</span>
+          <span class="bold" id="receipt-item-name">-</span>
         </div>
-        <div class="receipt-line">
-          <span>Deducted:</span>
-          <strong class="price-deducted" id="receipt-item-price">$10,000,000</strong>
+        <div class="receipt-row">
+          <span>Price Charged</span>
+          <span class="bold price-charge" id="receipt-item-price">-</span>
         </div>
-        <div class="receipt-line">
-          <span>Remaining Balance:</span>
-          <strong id="receipt-new-balance">$0.00</strong>
+        <div class="receipt-row divider"></div>
+        <div class="receipt-row">
+          <span>Remaining Balance</span>
+          <span class="bold" id="receipt-new-balance">-</span>
         </div>
       </div>
 
-      <button id="modal-close-btn">Done</button>
+      <button id="modal-close-btn" class="primary-btn">Close Window</button>
     </div>
   </div>
 
-  <!-- Global Error Notification Toast -->
+  <!-- Apple style Toast Alert -->
   <div class="toast-notification hide" id="error-toast">
     <div class="toast-content">
       <span class="toast-icon">⚠️</span>
-      <span id="toast-message">Error message goes here</span>
+      <span id="toast-message">Error message</span>
     </div>
   </div>
 
