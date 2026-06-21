@@ -24,7 +24,7 @@
   --font-apple: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", "Inter", sans-serif;
   --font-display: 'Outfit', sans-serif;
   
-  --transition-apple: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  --transition-apple: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   --border-radius-apple: 20px;
 }
 
@@ -56,6 +56,7 @@ html, body {
   opacity: 0.28;
   pointer-events: none;
   animation: float-mesh 20s infinite alternate ease-in-out;
+  will-change: transform;
 }
 
 .mesh-1 {
@@ -75,10 +76,28 @@ html, body {
   animation-delay: -7s;
 }
 
+.mesh-3 {
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, var(--apple-red) 0%, rgba(255, 149, 0, 0.4) 100%);
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.16;
+  animation: float-mesh-slow 30s infinite alternate ease-in-out;
+  animation-delay: -12s;
+}
+
 @keyframes float-mesh {
   0% { transform: translate(0, 0) scale(1); }
   50% { transform: translate(60px, -40px) scale(1.1); }
   100% { transform: translate(-30px, 30px) scale(0.95); }
+}
+
+@keyframes float-mesh-slow {
+  0% { transform: translate(-50%, -50%) translate(-40px, 40px) scale(0.9); }
+  50% { transform: translate(-50%, -50%) translate(50px, -60px) scale(1.15); }
+  100% { transform: translate(-50%, -50%) translate(-20px, 20px) scale(0.95); }
 }
 
 /* Apple Navigation Bar */
@@ -167,7 +186,9 @@ html, body {
   font-weight: 700;
   font-size: 3.5rem;
   line-height: 1.1;
-  color: #fff;
+  background: linear-gradient(135deg, #ffffff 40%, #ff2d55 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   letter-spacing: -1.5px;
 }
 
@@ -176,7 +197,9 @@ html, body {
   font-weight: 700;
   font-size: 2rem;
   line-height: 1.25;
-  color: var(--text-sub);
+  background: linear-gradient(135deg, #86868b 30%, #ff9500 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   letter-spacing: -0.8px;
   margin-top: 0.25rem;
 }
@@ -845,7 +868,25 @@ button:active {
   margin-left: auto;
   margin-right: auto;
   backdrop-filter: blur(10px);
-  animation: apple-fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: apple-fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.45s both;
+}
+
+.apple-hero .hero-title {
+  animation: apple-fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.apple-hero .hero-subtitle {
+  animation: apple-fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+}
+.apple-hero .hero-desc {
+  animation: apple-fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+}
+.apple-connect-widget {
+  animation: apple-fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s both;
+}
+
+@keyframes apple-fade-in-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 .warning-icon {
@@ -1515,6 +1556,12 @@ button:active {
   letter-spacing: 2px;
   margin-bottom: 0.75rem;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+  animation: code-pulse 2s infinite ease-in-out;
+}
+
+@keyframes code-pulse {
+  0%, 100% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.1), 0 0 2px rgba(255, 45, 85, 0.3); opacity: 0.95; }
+  50% { text-shadow: 0 0 20px rgba(255, 45, 85, 0.6), 0 0 5px rgba(255, 45, 85, 0.3); opacity: 1; color: var(--apple-red); }
 }
 .instruction-box {
   margin-bottom: 1.25rem;

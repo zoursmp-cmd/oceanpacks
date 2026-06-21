@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctx = canvas.getContext('2d');
     
     let particles = [];
-    const particleCount = 45;
+    const particleCount = 85;
     
     function resize() {
       canvas.width = window.innerWidth;
@@ -131,25 +131,32 @@ document.addEventListener('DOMContentLoaded', () => {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height + canvas.height;
         this.size = Math.random() * 2 + 1;
-        this.speedY = -(Math.random() * 0.4 + 0.15);
-        this.speedX = Math.random() * 0.3 - 0.15;
-        this.opacity = Math.random() * 0.45 + 0.15;
+        this.speedY = -(Math.random() * 0.5 + 0.2);
+        this.speedX = Math.random() * 0.4 - 0.2;
+        this.opacity = Math.random() * 0.5 + 0.15;
+        this.angle = Math.random() * Math.PI * 2;
+        this.angleSpeed = Math.random() * 0.02 + 0.005;
       }
       update() {
         this.y += this.speedY;
-        this.x += this.speedX;
+        this.angle += this.angleSpeed;
+        this.x += this.speedX + Math.sin(this.angle) * 0.15;
         if (this.y < -20 || this.x < -20 || this.x > canvas.width + 20) {
           this.reset();
         }
       }
       draw() {
+        // Outer glowing aura (cheap layout-friendly gradient-free method)
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size * 2.6, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 45, 85, ${this.opacity * 0.28})`;
+        ctx.fill();
+        
+        // Inner glowing core
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 45, 85, ${this.opacity})`;
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = 'rgba(255, 45, 85, 0.4)';
+        ctx.fillStyle = `rgba(255, 45, 85, ${this.opacity * 0.95})`;
         ctx.fill();
-        ctx.shadowBlur = 0;
       }
     }
     
@@ -621,7 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="qty-val">${qty}</span>
             <button class="qty-btn inc-btn" data-id="${id}">+</button>
           </div>
-          <button class="remove-item-btn" data-id="${id}" title="Remove">🗑️</button>
+          <button class="remove-item-btn" data-id="${id}" title="Remove" style="background: none; border: none; color: var(--text-sub); font-size: 1.5rem; cursor: pointer; padding: 0 4px; line-height: 1; transition: var(--transition-apple);">&times;</button>
         </div>
       `;
 
