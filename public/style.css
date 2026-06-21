@@ -1228,3 +1228,362 @@ button:active {
 .hide {
   display: none !important;
 }
+
+/* FAQ Accordion Section */
+.faq-section {
+  max-width: 1040px;
+  width: 100%;
+  margin: 5rem auto;
+  padding: 0 1.5rem;
+}
+.faq-section h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.8rem;
+  letter-spacing: -0.5px;
+  margin-bottom: 1.5rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 1rem;
+}
+.faq-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.faq-item {
+  background: var(--glass-panel);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  overflow: hidden;
+  transition: var(--transition-apple);
+}
+.faq-item:hover {
+  border-color: var(--glass-border-hover);
+}
+.faq-header {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+.faq-header h3 {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-main);
+}
+.faq-icon {
+  font-size: 0.8rem;
+  color: var(--text-sub);
+  transition: transform 0.3s ease;
+}
+.faq-item.active .faq-icon {
+  transform: rotate(180deg);
+}
+.faq-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out, padding 0.3s ease;
+  padding: 0 1.5rem;
+  color: var(--text-sub);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+.faq-item.active .faq-body {
+  max-height: 150px;
+  padding-bottom: 1.25rem;
+}
+
+/* Live Leaderboard Section */
+.leaderboard-section {
+  max-width: 1040px;
+  width: 100%;
+  margin: 5rem auto;
+  padding: 0 1.5rem;
+}
+.leaderboard-section h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.8rem;
+  letter-spacing: -0.5px;
+  margin-bottom: 0.25rem;
+  text-align: left;
+}
+.leaderboard-section p {
+  color: var(--text-sub);
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+.leaderboard-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 0.75rem;
+}
+.leaderboard-tab-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-sub);
+  padding: 0.5rem 1.25rem;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: none;
+  transition: var(--transition-apple);
+}
+.leaderboard-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  transform: none;
+  box-shadow: none;
+}
+.leaderboard-tab-btn.active {
+  background: var(--apple-red);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(255, 45, 85, 0.2);
+}
+.leaderboard-panel {
+  display: none;
+  background: var(--glass-panel);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-apple);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  padding: 1.5rem;
+  overflow-x: auto;
+}
+.leaderboard-panel.active {
+  display: block;
+  animation: apple-scale-up 0.3s ease;
+}
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.leaderboard-table th {
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  color: var(--text-sub);
+  text-transform: uppercase;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.leaderboard-table td {
+  padding: 1rem;
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  vertical-align: middle;
+}
+.leaderboard-table tr:last-child td {
+  border-bottom: none;
+}
+.leaderboard-rank {
+  font-weight: 700;
+  font-size: 1rem;
+  width: 40px;
+}
+.rank-1 { color: #ffd700; text-shadow: 0 0 8px rgba(255,215,0,0.3); }
+.rank-2 { color: #c0c0c0; text-shadow: 0 0 8px rgba(192,192,192,0.3); }
+.rank-3 { color: #cd7f32; text-shadow: 0 0 8px rgba(205,127,50,0.3); }
+.leaderboard-player {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.leaderboard-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  image-rendering: pixelated;
+}
+.leaderboard-value {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--apple-green);
+}
+
+/* Search & Filter Categories */
+.search-filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.search-box {
+  position: relative;
+  max-width: 320px;
+  width: 100%;
+}
+.search-box input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50px;
+  padding: 0.55rem 1rem 0.55rem 2.25rem;
+  color: #fff;
+  font-size: 0.85rem;
+  outline: none;
+  transition: var(--transition-apple);
+}
+.search-box input:focus {
+  border-color: var(--apple-red);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 10px rgba(255, 45, 85, 0.25);
+}
+.search-box .search-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  fill: var(--text-sub);
+  pointer-events: none;
+}
+.filter-pills {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+.filter-pill {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-sub);
+  padding: 0.45rem 1.15rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: none;
+  transition: var(--transition-apple);
+}
+.filter-pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  transform: none;
+  box-shadow: none;
+}
+.filter-pill.active {
+  background: var(--text-main);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--apple-black);
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.15);
+}
+
+/* Connection Code Widget Details */
+.code-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  text-align: center;
+  transition: var(--transition-apple);
+}
+.code-container:hover {
+  border-color: rgba(255, 45, 85, 0.3);
+}
+.code-label {
+  font-size: 0.75rem;
+  color: var(--text-sub);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.35rem;
+}
+.code-display {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 2px;
+  margin-bottom: 0.75rem;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+.instruction-box {
+  margin-bottom: 1.25rem;
+}
+.instruction-box p {
+  font-size: 0.85rem;
+  color: var(--text-main);
+  margin-bottom: 0.45rem;
+}
+.instruction-box code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  font-family: monospace;
+  color: var(--apple-red);
+}
+.status-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+  padding: 0.65rem;
+  font-size: 0.8rem;
+  color: var(--text-sub);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+.spinner-mini {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--apple-red);
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+#bg-particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  pointer-events: none;
+}
+
+/* Copy button */
+.btn-copy-svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+.copy-connection-btn {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  transition: var(--transition-apple);
+}
+.copy-connection-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+

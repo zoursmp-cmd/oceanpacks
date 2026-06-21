@@ -1,13 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
   // Application State
-  // Application State
   const state = {
     username: null,
     uuid: null,
     balance: 0,
     online: false,
     rank: 'MEMBER',
-    catalog: {}
+    catalog: {},
+    code: null
   };
 
   // Cart State
@@ -15,9 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // DOM Elements
   const els = {
-    usernameInput: document.getElementById('username-input'),
-    connectBtn: document.getElementById('connect-btn'),
-    connectError: document.getElementById('connect-error'),
+    // Connect widget elements
+    linkCodeDisplay: document.getElementById('link-code-display'),
+    btnRegenerateCode: document.getElementById('btn-regenerate-code'),
+    connectionCommandText: document.getElementById('connection-command-text'),
+    copyConnectionBtn: document.getElementById('copy-connection-btn'),
+    connectionStatusText: document.getElementById('connection-status-text'),
     connectForm: document.getElementById('connect-form'),
     profileDisplay: document.getElementById('profile-display'),
     playerAvatar: document.getElementById('player-avatar'),
@@ -28,6 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
     disconnectBtn: document.getElementById('disconnect-btn'),
     itemsGrid: document.getElementById('items-grid'),
     
+    // Search & Filter Elements
+    searchInput: document.getElementById('search-input'),
+
     // Modal Elements
     modalOverlay: document.getElementById('modal-overlay'),
     receiptItemName: document.getElementById('receipt-item-name'),
@@ -50,21 +56,42 @@ document.addEventListener('DOMContentLoaded', () => {
     giftCheckbox: document.getElementById('gift-checkbox'),
     giftRecipientField: document.getElementById('gift-recipient-field'),
     giftRecipientInput: document.getElementById('gift-recipient-input'),
-    checkoutBtn: document.getElementById('checkout-btn')
+    checkoutBtn: document.getElementById('checkout-btn'),
+
+    // Report Modal
+    btnShowReport: document.getElementById('btn-show-report'),
+    reportModalOverlay: document.getElementById('report-modal-overlay'),
+    reportModalCloseBtn: document.getElementById('report-modal-close-btn')
   };
 
-  // Initialize
+  // Initialize features
+  initParticleBg();
   initCatalog();
+  initFAQ();
+  initLeaderboards();
+  initSearchFilters();
   restoreSession();
 
   // Event Listeners
-  els.connectBtn.addEventListener('click', handleConnect);
-  els.usernameInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') handleConnect();
+  els.btnRegenerateCode.addEventListener('click', generateLinkCode);
+  els.copyConnectionBtn.addEventListener('click', () => {
+    if (state.code) {
+      navigator.clipboard.writeText(`/storeauth ${state.code}`);
+      els.copyConnectionBtn.innerText = 'Copied!';
+      setTimeout(() => {
+        els.copyConnectionBtn.innerText = 'Copy';
+      }, 2000);
+    }
   });
   els.disconnectBtn.addEventListener('click', handleDisconnect);
   els.modalCloseBtn.addEventListener('click', () => {
     els.modalOverlay.classList.add('hide');
+  });
+  els.btnShowReport.addEventListener('click', () => {
+    els.reportModalOverlay.classList.remove('hide');
+  });
+  els.reportModalCloseBtn.addEventListener('click', () => {
+    els.reportModalOverlay.classList.add('hide');
   });
 
   // Cart Event Listeners
@@ -80,6 +107,184 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   els.checkoutBtn.addEventListener('click', handleCheckout);
 
+  // Animated Particle Background Canvas
+  function initParticleBg() {
+    const canvas = document.getElementById('bg-particles');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    let particles = [];
+    const particleCount = 45;
+    
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+    
+    class Particle {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height + canvas.height;
+        this.size = Math.random() * 2 + 1;
+        this.speedY = -(Math.random() * 0.4 + 0.15);
+        this.speedX = Math.random() * 0.3 - 0.15;
+        this.opacity = Math.random() * 0.45 + 0.15;
+      }
+      update() {
+        this.y += this.speedY;
+        this.x += this.speedX;
+        if (this.y < -20 || this.x < -20 || this.x > canvas.width + 20) {
+          this.reset();
+        }
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 45, 85, ${this.opacity})`;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = 'rgba(255, 45, 85, 0.4)';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+    
+    for (let i = 0; i < particleCount; i++) {
+      particles.push(new Particle());
+      particles[i].y = Math.random() * canvas.height;
+    }
+    
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+  }
+
+  // FAQ Accordion Initialization
+  function initFAQ() {
+    const faqItems = document.querySelectorAll('.faq-item');
+    faqItems.forEach(item => {
+      const header = item.querySelector('.faq-header');
+      header.addEventListener('click', () => {
+        const isActive = item.classList.contains('active');
+        faqItems.forEach(i => i.classList.remove('active'));
+        if (!isActive) {
+          item.classList.add('active');
+        }
+      });
+    });
+  }
+
+  // Leaderboards Section Initialization
+  function initLeaderboards() {
+    const tabs = document.querySelectorAll('.leaderboard-tab-btn');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        const activeTab = tab.getAttribute('data-tab');
+        const panels = document.querySelectorAll('.leaderboard-panel');
+        panels.forEach(panel => {
+          panel.classList.remove('active');
+          if (panel.id === `panel-${activeTab}`) {
+            panel.classList.add('active');
+          }
+        });
+      });
+    });
+    
+    fetchLeaderboards();
+  }
+
+  async function fetchLeaderboards() {
+    try {
+      const res = await fetch('/api/leaderboard');
+      if (!res.ok) throw new Error('Failed to load leaderboard');
+      const data = await res.json();
+      
+      renderLeaderboardTable('balance', data.balance || [], '$');
+      renderLeaderboardTable('kills', data.kills || [], '');
+      renderLeaderboardTable('playtime', data.playtime || [], '');
+    } catch (err) {
+      console.error(err);
+      ['balance', 'kills', 'playtime'].forEach(type => {
+        const body = document.getElementById(`leaderboard-${type}-body`);
+        if (body) {
+          body.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--apple-red); padding: 2rem 0;">Stats temporary unavailable.</td></tr>`;
+        }
+      });
+    }
+  }
+
+  function renderLeaderboardTable(type, list, unit) {
+    const body = document.getElementById(`leaderboard-${type}-body`);
+    if (!body) return;
+    body.innerHTML = '';
+    
+    if (list.length === 0) {
+      body.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-sub); padding: 2rem 0;">No stats available.</td></tr>`;
+      return;
+    }
+    
+    list.slice(0, 10).forEach((entry, idx) => {
+      const rank = idx + 1;
+      const row = document.createElement('tr');
+      
+      let valFormatted = entry.value;
+      if (unit === '$') {
+        const num = parseFloat(entry.value.replace(/,/g, ''));
+        if (!isNaN(num)) {
+          valFormatted = formatMoney(num);
+        } else {
+          valFormatted = '$' + entry.value;
+        }
+      }
+      
+      row.innerHTML = `
+        <td class="leaderboard-rank rank-${rank}">${rank}</td>
+        <td>
+          <div class="leaderboard-player">
+            <img class="leaderboard-avatar" src="https://mc-heads.net/avatar/${entry.name}" alt="${entry.name}">
+            <span>${entry.name}</span>
+          </div>
+        </td>
+        <td class="leaderboard-value">${valFormatted}</td>
+      `;
+      body.appendChild(row);
+    });
+  }
+
+  // Search & Filters Configuration
+  let activeCategory = 'all';
+  let searchQuery = '';
+
+  function initSearchFilters() {
+    els.searchInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value.toLowerCase().trim();
+      renderCatalog();
+    });
+
+    const pills = document.querySelectorAll('.filter-pill');
+    pills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        pills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        activeCategory = pill.getAttribute('data-category');
+        renderCatalog();
+      });
+    });
+  }
+
   // Fetch and render the store items catalog
   async function initCatalog() {
     try {
@@ -93,100 +298,65 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Restore player session from localStorage if present
-  function restoreSession() {
+  // Session recovery and initialization
+  async function restoreSession() {
     const savedUser = localStorage.getItem('ocean_smp_username');
     if (savedUser) {
-      els.usernameInput.value = savedUser;
-      handleConnect();
-    }
-  }
-
-  // Handle Account Connection
-  async function handleConnect() {
-    const username = els.usernameInput.value.trim();
-    if (!username) return;
-
-    els.connectBtn.disabled = true;
-    els.connectBtn.innerText = 'Verifying...';
-    els.connectError.classList.add('hide');
-
-    try {
-      const res = await fetch(`/api/player-check?username=${encodeURIComponent(username)}`);
-      
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to find player');
-      }
-
-      const player = await res.json();
-      
-      if (player.verified === false) {
-        showVerifyModal(player.username, player.code);
-        return;
-      }
-
-      completeSignIn(player);
-
-    } catch (err) {
-      console.error(err);
-      els.connectError.innerText = err.message || 'Player verification failed.';
-      els.connectError.classList.remove('hide');
-      handleDisconnect();
-    } finally {
-      els.connectBtn.disabled = false;
-      els.connectBtn.innerText = 'Connect';
-    }
-  }
-
-  let pollingInterval = null;
-
-  function showVerifyModal(username, code) {
-    const verifyModal = document.getElementById('verify-modal-overlay');
-    const verifyCommandText = document.getElementById('verify-command-text');
-    const verifyCancelBtn = document.getElementById('verify-cancel-btn');
-    const copyCommandBtn = document.getElementById('copy-command-btn');
-
-    verifyCommandText.innerText = `/storeauth ${code}`;
-    verifyModal.classList.remove('hide');
-
-    copyCommandBtn.onclick = () => {
-      navigator.clipboard.writeText(`/storeauth ${code}`);
-      copyCommandBtn.innerText = 'Copied!';
-      setTimeout(() => {
-        copyCommandBtn.innerText = 'Copy';
-      }, 2000);
-    };
-
-    verifyCancelBtn.onclick = () => {
-      stopPolling();
-      verifyModal.classList.add('hide');
-      els.connectBtn.disabled = false;
-      els.connectBtn.innerText = 'Connect';
-    };
-
-    stopPolling();
-    pollingInterval = setInterval(async () => {
       try {
-        const res = await fetch(`/api/player-check?username=${encodeURIComponent(username)}`);
+        const res = await fetch(`/api/player-info?username=${encodeURIComponent(savedUser)}`);
         if (res.ok) {
           const player = await res.json();
           if (player.verified === true) {
-            stopPolling();
-            verifyModal.classList.add('hide');
             completeSignIn(player);
+            return;
           }
         }
       } catch (err) {
-        console.error('Polling error:', err);
+        console.error('Session restore failed:', err);
       }
-    }, 3000);
+    }
+    // Generate new code and poll if session wasn't restored
+    generateLinkCode();
   }
 
-  function stopPolling() {
-    if (pollingInterval) {
-      clearInterval(pollingInterval);
-      pollingInterval = null;
+  function generateLinkCode() {
+    const code = Math.floor(100000 + Math.random() * 900000);
+    state.code = code;
+    
+    if (els.linkCodeDisplay) {
+      els.linkCodeDisplay.innerText = code;
+      els.connectionCommandText.innerText = `/storeauth ${code}`;
+      els.connectionStatusText.innerText = 'Waiting for connection...';
+    }
+    startConnectionPolling(code);
+  }
+
+  let connectionPollingInterval = null;
+
+  function startConnectionPolling(code) {
+    if (connectionPollingInterval) clearInterval(connectionPollingInterval);
+    
+    connectionPollingInterval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/check-link?code=${code}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.player) {
+            clearInterval(connectionPollingInterval);
+            connectionPollingInterval = null;
+            completeSignIn(data.player);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }, 2000);
+  }
+
+  function stopConnectionPolling() {
+    if (connectionPollingInterval) {
+      clearInterval(connectionPollingInterval);
+      connectionPollingInterval = null;
     }
   }
 
@@ -234,7 +404,6 @@ document.addEventListener('DOMContentLoaded', () => {
     state.rank = 'MEMBER';
 
     localStorage.removeItem('ocean_smp_username');
-    els.usernameInput.value = '';
 
     els.profileDisplay.classList.add('hide');
     els.connectForm.classList.remove('hide');
@@ -249,8 +418,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderCatalog();
     renderCart();
-    stopPolling();
     closeCart();
+    generateLinkCode();
 
     if (prevUser) {
       try {
@@ -265,16 +434,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // MediaWiki exact hash paths to load textures correctly without 404
+  // Local-only fast loading Minecraft item icons
   const ITEM_ICONS = {
-    'void_totem': 'https://minecraft.wiki/images/2/2e/Totem_of_Undying_JE2_BE2.png',
-    'netherite_ingot': 'https://assets.mcasset.cloud/1.21/assets/minecraft/textures/item/netherite_ingot.png',
-    'elytra': 'https://assets.mcasset.cloud/1.21/assets/minecraft/textures/item/elytra.png',
-    'healing_potion': 'https://minecraft.wiki/images/e/e8/Hardcore_Heart_JE1_BE1.png',
-    'haste_potion': 'https://assets.mcasset.cloud/1.21/assets/minecraft/textures/item/potion.png',
-    'strength_potion': 'https://assets.mcasset.cloud/1.21/assets/minecraft/textures/item/potion.png',
-    'piglin_head': 'https://minecraft.wiki/images/b/b6/Piglin_Head_JE2_BE1.png',
-    'dragon_head': 'https://minecraft.wiki/images/0/01/Dragon_Head_JE2_BE1.png'
+    'void_totem': '/images/void_totem.png',
+    'netherite_ingot': '/images/netherite_ingot.png',
+    'elytra': '/images/elytra.png',
+    'healing_potion': '/images/healing_potion.png',
+    'haste_potion': '/images/potion.png',
+    'strength_potion': '/images/potion.png',
+    'piglin_head': '/images/piglin_head.png',
+    'dragon_head': '/images/dragon_head.png'
   };
 
   const ITEM_FILTERS = {
@@ -282,11 +451,37 @@ document.addEventListener('DOMContentLoaded', () => {
     'strength_potion': 'hue-rotate(320deg) saturate(3)'
   };
 
-  // Render Items Grid
+  // Render Items Grid with search queries and category pills
   function renderCatalog() {
     els.itemsGrid.innerHTML = '';
     
+    // Category mapping for catalog items
+    const categories = {
+      'void_totem': 'misc',
+      'netherite_ingot': 'misc',
+      'elytra': 'misc',
+      'healing_potion': 'potions',
+      'haste_potion': 'potions',
+      'strength_potion': 'potions',
+      'piglin_head': 'heads',
+      'dragon_head': 'heads'
+    };
+
+    let count = 0;
     Object.entries(state.catalog).forEach(([id, item]) => {
+      const category = categories[id] || 'misc';
+      
+      // Filter by category active pill
+      if (activeCategory !== 'all' && category !== activeCategory) return;
+      
+      // Filter by search query text
+      if (searchQuery) {
+        const nameMatch = item.name.toLowerCase().includes(searchQuery);
+        const descMatch = item.description.toLowerCase().includes(searchQuery);
+        if (!nameMatch && !descMatch) return;
+      }
+
+      count++;
       const card = document.createElement('div');
       card.className = 'item-card';
       
@@ -316,6 +511,10 @@ document.addEventListener('DOMContentLoaded', () => {
       card.querySelector('.buy-btn').addEventListener('click', () => addToCart(id));
       els.itemsGrid.appendChild(card);
     });
+
+    if (count === 0) {
+      els.itemsGrid.innerHTML = `<div class="loading-spinner">No items match your active filters or query.</div>`;
+    }
   }
 
   // Cart Operations
@@ -483,7 +682,6 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error(data.error || 'Checkout failed');
       }
 
-      // Success! Update local balance
       state.balance = data.newBalance;
       els.playerBalance.innerText = formatMoney(state.balance);
 
