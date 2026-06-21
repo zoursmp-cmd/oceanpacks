@@ -16,11 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // DOM Elements
   const els = {
     // Connect widget elements
-    linkCodeDisplay: document.getElementById('link-code-display'),
-    btnRegenerateCode: document.getElementById('btn-regenerate-code'),
-    connectionCommandText: document.getElementById('connection-command-text'),
-    copyConnectionBtn: document.getElementById('copy-connection-btn'),
-    connectionStatusText: document.getElementById('connection-status-text'),
+    connectUsernameInput: document.getElementById('connect-username-input'),
+    btnConnectPlayer: document.getElementById('btn-connect-player'),
     connectForm: document.getElementById('connect-form'),
     profileDisplay: document.getElementById('profile-display'),
     playerAvatar: document.getElementById('player-avatar'),
@@ -41,6 +38,12 @@ document.addEventListener('DOMContentLoaded', () => {
     receiptNewBalance: document.getElementById('receipt-new-balance'),
     modalCloseBtn: document.getElementById('modal-close-btn'),
     
+    // Verification Modal
+    verifyModalOverlay: document.getElementById('verify-modal-overlay'),
+    verifyCommandText: document.getElementById('verify-command-text'),
+    copyCommandBtn: document.getElementById('copy-command-btn'),
+    verifyCancelBtn: document.getElementById('verify-cancel-btn'),
+
     // Toast Notification
     errorToast: document.getElementById('error-toast'),
     toastMessage: document.getElementById('toast-message'),
@@ -61,7 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Report Modal
     btnShowReport: document.getElementById('btn-show-report'),
     reportModalOverlay: document.getElementById('report-modal-overlay'),
-    reportModalCloseBtn: document.getElementById('report-modal-close-btn')
+    reportModalCloseBtn: document.getElementById('report-modal-close-btn'),
+    
+    // Connect Error
+    connectError: document.getElementById('connect-error')
   };
 
   // Initialize features
@@ -73,16 +79,17 @@ document.addEventListener('DOMContentLoaded', () => {
   restoreSession();
 
   // Event Listeners
-  els.btnRegenerateCode.addEventListener('click', generateLinkCode);
-  els.copyConnectionBtn.addEventListener('click', () => {
+  els.btnConnectPlayer.addEventListener('click', handleConnect);
+  els.copyCommandBtn.addEventListener('click', () => {
     if (state.code) {
       navigator.clipboard.writeText(`/storeauth ${state.code}`);
-      els.copyConnectionBtn.innerText = 'Copied!';
+      els.copyCommandBtn.innerText = 'Copied!';
       setTimeout(() => {
-        els.copyConnectionBtn.innerText = 'Copy';
+        els.copyCommandBtn.innerText = 'Copy';
       }, 2000);
     }
   });
+  els.verifyCancelBtn.addEventListener('click', cancelConnection);
   els.disconnectBtn.addEventListener('click', handleDisconnect);
   els.modalCloseBtn.addEventListener('click', () => {
     els.modalOverlay.classList.add('hide');
@@ -310,54 +317,77 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedUser = localStorage.getItem('ocean_smp_username');
     if (savedUser) {
       try {
-        const res = await fetch(`/api/player-info?username=${encodeURIComponent(savedUser)}`);
+        const res = await fetch(`/api/player-check?username=${encodeURIComponent(savedUser)}`);
         if (res.ok) {
-          const player = await res.json();
-          if (player.verified === true) {
-            completeSignIn(player);
-            return;
+          const data = await res.json();
+          if (data.verified === true) {
+            completeSignIn(data.player);
           }
         }
       } catch (err) {
         console.error('Session restore failed:', err);
       }
     }
-    // Generate new code and poll if session wasn't restored
-    generateLinkCode();
   }
 
-  function generateLinkCode() {
-    const code = Math.floor(100000 + Math.random() * 900000);
-    state.code = code;
-    
-    if (els.linkCodeDisplay) {
-      els.linkCodeDisplay.innerText = code;
-      els.connectionCommandText.innerText = `/storeauth ${code}`;
-      els.connectionStatusText.innerText = 'Waiting for connection...';
+  // Handle Connect Click
+  async function handleConnect() {
+    const username = els.connectUsernameInput.value.trim();
+    if (!username) {
+      showToast('Please enter your Minecraft username!');
+      return;
     }
-    startConnectionPolling(code);
+
+    els.btnConnectPlayer.disabled = true;
+    els.btnConnectPlayer.innerText = 'Connecting...';
+    els.connectError.classList.add('hide');
+
+    try {
+      const res = await fetch(`/api/player-check?username=${encodeURIComponent(username)}`);
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Connection failed');
+      }
+
+      if (data.verified) {
+        completeSignIn(data.player);
+      } else {
+        state.code = data.code;
+        els.verifyCommandText.innerText = `/storeauth ${data.code}`;
+        els.verifyModalOverlay.classList.remove('hide');
+        startConnectionPolling(username);
+      }
+    } catch (err) {
+      console.error(err);
+      els.connectError.innerText = err.message;
+      els.connectError.classList.remove('hide');
+    } finally {
+      els.btnConnectPlayer.disabled = false;
+      els.btnConnectPlayer.innerText = 'Connect Account';
+    }
   }
 
   let connectionPollingInterval = null;
 
-  function startConnectionPolling(code) {
+  function startConnectionPolling(username) {
     if (connectionPollingInterval) clearInterval(connectionPollingInterval);
     
     connectionPollingInterval = setInterval(async () => {
       try {
-        const res = await fetch(`/api/check-link?code=${code}`);
+        const res = await fetch(`/api/player-check?username=${encodeURIComponent(username)}`);
         if (res.ok) {
           const data = await res.json();
-          if (data.success && data.player) {
+          if (data.verified && data.player) {
             clearInterval(connectionPollingInterval);
             connectionPollingInterval = null;
+            els.verifyModalOverlay.classList.add('hide');
             completeSignIn(data.player);
           }
         }
       } catch (err) {
         console.error(err);
       }
-    }, 2000);
+    }, 3000);
   }
 
   function stopConnectionPolling() {
@@ -365,6 +395,11 @@ document.addEventListener('DOMContentLoaded', () => {
       clearInterval(connectionPollingInterval);
       connectionPollingInterval = null;
     }
+  }
+
+  function cancelConnection() {
+    stopConnectionPolling();
+    els.verifyModalOverlay.classList.add('hide');
   }
 
   function completeSignIn(player) {
@@ -414,6 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     els.profileDisplay.classList.add('hide');
     els.connectForm.classList.remove('hide');
+    els.connectUsernameInput.value = '';
 
     document.querySelectorAll('.buy-btn').forEach(btn => {
       btn.disabled = true;
@@ -426,7 +462,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCatalog();
     renderCart();
     closeCart();
-    generateLinkCode();
 
     if (prevUser) {
       try {

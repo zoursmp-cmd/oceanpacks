@@ -71,28 +71,14 @@
         <div id="connect-form" class="connect-form">
           <div class="form-header">
             <h3>Link Minecraft Account</h3>
-            <p>Connect your account by running the linking command in-game.</p>
+            <p>Enter your username to connect your account and verify in-game.</p>
           </div>
           
-          <div class="code-container">
-            <span class="code-label">In-Game Link Code</span>
-            <div class="code-display" id="link-code-display">------</div>
-            <button class="secondary-btn" id="btn-regenerate-code" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; border-radius: 8px;">New Code</button>
+          <div class="input-row" style="margin-bottom: 1.25rem;">
+            <input type="text" id="connect-username-input" placeholder="Minecraft Username" autocomplete="off" style="width: 100%;">
           </div>
-
-          <div class="instruction-box">
-            <p>1. Log in to the server: <code>play.oceansmp.online</code></p>
-            <p>2. Execute this command in chat:</p>
-            <div class="command-box">
-              <code id="connection-command-text">/storeauth ------</code>
-              <button id="copy-connection-btn" class="copy-btn">Copy</button>
-            </div>
-          </div>
-
-          <div class="status-box">
-            <div class="spinner-mini"></div>
-            <span id="connection-status-text" style="margin-left: 6px;">Waiting for connection...</span>
-          </div>
+          
+          <button id="btn-connect-player" style="width: 100%;">Connect Account</button>
           <div id="connect-error" class="error-msg hide"></div>
         </div>
 

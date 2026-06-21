@@ -98,23 +98,22 @@ app.get('/api/catalog', (req, res) => {
   res.json(ITEMS);
 });
 
-// Proxy Player Info & Handle Verification Code Verification
-// Check link status by 6-digit code (reverse verification)
-app.get('/api/check-link', async (req, res) => {
-  const codeStr = req.query.code;
-  if (!codeStr) {
-    return res.status(400).json({ error: 'Code is required' });
+// Check player connection status & generate code
+app.get('/api/player-check', async (req, res) => {
+  const username = req.query.username;
+  if (!username) {
+    return res.status(400).json({ error: 'Username is required' });
   }
-  const code = parseInt(codeStr);
-  if (isNaN(code)) {
-    return res.status(400).json({ error: 'Code must be a number' });
-  }
+  const normalizedUser = username.trim().toLowerCase();
 
   // Dev Test Bypass: Code 777777 immediately logs in notzour
-  if (code === 777777) {
+  if (req.query.code === '777777' && normalizedUser === 'notzour') {
     verifiedSessions.add('notzour');
+    await runCommand('scoreboard players set notzour storeauth 777777');
+    await runCommand('scoreboard players set notzour storeverified 1');
     return res.json({
       success: true,
+      verified: true,
       player: {
         username: 'notzour',
         uuid: '1878baea-8bfb-389a-97ca-cef603993849',
@@ -127,46 +126,57 @@ app.get('/api/check-link', async (req, res) => {
   }
 
   try {
-    // 1. Fetch online server status to get online players list
-    const serverResponse = await fetch(`${API_BASE_URL}/api/server`, {
+    // 1. Fetch player info from game server API
+    const playerUrl = `${API_BASE_URL}/api/player?name=${encodeURIComponent(username.trim())}`;
+    const playerRes = await fetch(playerUrl, {
       headers: { 'Authorization': `Bearer ${API_KEY}` }
     });
-    if (!serverResponse.ok) {
-      return res.status(500).json({ error: 'Failed to fetch online player list from server.' });
+    if (!playerRes.ok) {
+      return res.status(400).json({ error: 'Player does not exist or has never played on the server.' });
     }
-    const serverData = await serverResponse.json();
-    const onlinePlayers = serverData.players || [];
+    const player = await playerRes.json();
 
-    // 2. Loop through all online players to check their scoreboard code
-    for (const username of onlinePlayers) {
-      const playerUrl = `${API_BASE_URL}/api/player?name=${encodeURIComponent(username)}`;
-      const playerRes = await fetch(playerUrl, {
-        headers: { 'Authorization': `Bearer ${API_KEY}` }
-      });
-      if (playerRes.ok) {
-        const player = await playerRes.json();
-        if (player.auth_code === code && player.verified === true) {
-          const normalizedUser = player.username.toLowerCase();
-          verifiedSessions.add(normalizedUser);
-          return res.json({
-            success: true,
-            player: {
-              username: player.username,
-              uuid: player.uuid,
-              online: player.online,
-              rank: player.rank,
-              balance: player.balance,
-              verified: true
-            }
-          });
+    // 2. Validate online status
+    if (!player.online) {
+      return res.status(400).json({ error: 'You must be online on play.oceansmp.online to connect!' });
+    }
+
+    // 3. Check if player is already verified (in-game score storeverified == 1)
+    if (player.verified === true) {
+      verifiedSessions.add(normalizedUser);
+      return res.json({
+        success: true,
+        verified: true,
+        player: {
+          username: player.username,
+          uuid: player.uuid,
+          online: player.online,
+          rank: player.rank,
+          balance: player.balance,
+          verified: true
         }
-      }
+      });
     }
 
-    res.json({ success: false });
+    // 4. Generate or retrieve pending code
+    let code = pendingCodes.get(normalizedUser);
+    if (!code) {
+      code = Math.floor(100000 + Math.random() * 900000);
+      pendingCodes.set(normalizedUser, code);
+      // Update remote scoreboard scores
+      await runCommand(`scoreboard players set ${player.username} storeauth ${code}`);
+      await runCommand(`scoreboard players set ${player.username} storeverified 0`);
+    }
+
+    res.json({
+      success: true,
+      verified: false,
+      code: code
+    });
+
   } catch (error) {
-    console.error('Error checking code link:', error);
-    res.status(500).json({ error: 'Server error checking link code' });
+    console.error('Error in player-check:', error);
+    res.status(500).json({ error: 'Server error checking player connection' });
   }
 });
 
