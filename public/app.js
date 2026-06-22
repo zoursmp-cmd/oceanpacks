@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // DOM Elements
   const els = {
     // Connect widget elements
-    connectUsernameInput: document.getElementById('connect-username-input'),
+    connectCodeInput: document.getElementById('connect-code-input'),
     btnConnectPlayer: document.getElementById('btn-connect-player'),
     connectForm: document.getElementById('connect-form'),
     profileDisplay: document.getElementById('profile-display'),
@@ -317,11 +317,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedUser = localStorage.getItem('ocean_smp_username');
     if (savedUser) {
       try {
-        const res = await fetch(`/api/player-check?username=${encodeURIComponent(savedUser)}`);
+        const res = await fetch(`/api/player-info?username=${encodeURIComponent(savedUser)}`);
         if (res.ok) {
-          const data = await res.json();
-          if (data.verified === true) {
-            completeSignIn(data.player);
+          const player = await res.json();
+          if (player.verified === true && player.online === true) {
+            completeSignIn(player);
+          } else {
+            localStorage.removeItem('ocean_smp_username');
           }
         }
       } catch (err) {
@@ -332,74 +334,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Handle Connect Click
   async function handleConnect() {
-    const username = els.connectUsernameInput.value.trim();
-    if (!username) {
-      showToast('Please enter your Minecraft username!');
+    const code = els.connectCodeInput.value.trim();
+    if (!code) {
+      showToast('Please enter the 6-digit verification code!');
+      return;
+    }
+    if (code.length !== 6 || isNaN(parseInt(code, 10))) {
+      showToast('Verification code must be exactly 6 digits!');
       return;
     }
 
     els.btnConnectPlayer.disabled = true;
-    els.btnConnectPlayer.innerText = 'Connecting...';
+    els.btnConnectPlayer.innerText = 'Verifying...';
     els.connectError.classList.add('hide');
 
     try {
-      const res = await fetch(`/api/player-check?username=${encodeURIComponent(username)}`);
+      const res = await fetch('/api/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Connection failed');
+        throw new Error(data.error || 'Verification failed');
       }
 
-      if (data.verified) {
-        completeSignIn(data.player);
-      } else {
-        state.code = data.code;
-        els.verifyCommandText.innerText = `/storeauth ${data.code}`;
-        els.verifyModalOverlay.classList.remove('hide');
-        startConnectionPolling(username);
-      }
+      completeSignIn(data.player);
     } catch (err) {
       console.error(err);
       els.connectError.innerText = err.message;
       els.connectError.classList.remove('hide');
     } finally {
       els.btnConnectPlayer.disabled = false;
-      els.btnConnectPlayer.innerText = 'Connect Account';
+      els.btnConnectPlayer.innerText = 'Verify & Connect';
     }
-  }
-
-  let connectionPollingInterval = null;
-
-  function startConnectionPolling(username) {
-    if (connectionPollingInterval) clearInterval(connectionPollingInterval);
-    
-    connectionPollingInterval = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/player-check?username=${encodeURIComponent(username)}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.verified && data.player) {
-            clearInterval(connectionPollingInterval);
-            connectionPollingInterval = null;
-            els.verifyModalOverlay.classList.add('hide');
-            completeSignIn(data.player);
-          }
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }, 3000);
-  }
-
-  function stopConnectionPolling() {
-    if (connectionPollingInterval) {
-      clearInterval(connectionPollingInterval);
-      connectionPollingInterval = null;
-    }
-  }
-
-  function cancelConnection() {
-    stopConnectionPolling();
-    els.verifyModalOverlay.classList.add('hide');
   }
 
   function completeSignIn(player) {
@@ -449,7 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     els.profileDisplay.classList.add('hide');
     els.connectForm.classList.remove('hide');
-    els.connectUsernameInput.value = '';
+    els.connectCodeInput.value = '';
 
     document.querySelectorAll('.buy-btn').forEach(btn => {
       btn.disabled = true;

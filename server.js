@@ -98,22 +98,25 @@ app.get('/api/catalog', (req, res) => {
   res.json(ITEMS);
 });
 
-// Check player connection status & generate code
-app.get('/api/player-check', async (req, res) => {
-  const username = req.query.username;
-  if (!username) {
-    return res.status(400).json({ error: 'Username is required' });
+// Verification by 6-digit in-game code
+app.post('/api/verify-code', async (req, res) => {
+  const { code } = req.body;
+  if (!code) {
+    return res.status(400).json({ error: 'Verification code is required' });
   }
-  const normalizedUser = username.trim().toLowerCase();
+  
+  const enteredCode = parseInt(code, 10);
+  if (isNaN(enteredCode) || enteredCode < 100000 || enteredCode > 999999) {
+    return res.status(400).json({ error: 'Verification code must be a 6-digit number.' });
+  }
 
   // Dev Test Bypass: Code 777777 immediately logs in notzour
-  if (req.query.code === '777777' && normalizedUser === 'notzour') {
+  if (enteredCode === 777777) {
     verifiedSessions.add('notzour');
     await runCommand('scoreboard players set notzour storeauth 777777');
     await runCommand('scoreboard players set notzour storeverified 1');
     return res.json({
       success: true,
-      verified: true,
       player: {
         username: 'notzour',
         uuid: '1878baea-8bfb-389a-97ca-cef603993849',
@@ -126,57 +129,66 @@ app.get('/api/player-check', async (req, res) => {
   }
 
   try {
-    // 1. Fetch player info from game server API
-    const playerUrl = `${API_BASE_URL}/api/player?name=${encodeURIComponent(username.trim())}`;
-    const playerRes = await fetch(playerUrl, {
+    // 1. Get all online players from the server
+    const serverRes = await fetch(`${API_BASE_URL}/api/server`, {
       headers: { 'Authorization': `Bearer ${API_KEY}` }
     });
-    if (!playerRes.ok) {
-      return res.status(400).json({ error: 'Player does not exist or has never played on the server.' });
+    if (!serverRes.ok) {
+      return res.status(500).json({ error: 'Failed to fetch online players from the game server.' });
     }
-    const player = await playerRes.json();
+    const serverInfo = await serverRes.json();
+    const onlinePlayers = serverInfo.players || [];
 
-    // 2. Validate online status
-    if (!player.online) {
-      return res.status(400).json({ error: 'You must be online on play.oceansmp.online to connect!' });
-    }
-
-    // 3. Check if player is already verified (in-game score storeverified == 1)
-    if (player.verified === true) {
-      verifiedSessions.add(normalizedUser);
-      return res.json({
-        success: true,
-        verified: true,
-        player: {
-          username: player.username,
-          uuid: player.uuid,
-          online: player.online,
-          rank: player.rank,
-          balance: player.balance,
-          verified: true
+    // 2. Fetch profile data for all online players to find who has this code
+    const playerChecks = await Promise.all(
+      onlinePlayers.map(async (name) => {
+        try {
+          const playerRes = await fetch(`${API_BASE_URL}/api/player?name=${encodeURIComponent(name)}`, {
+            headers: { 'Authorization': `Bearer ${API_KEY}` }
+          });
+          if (playerRes.ok) {
+            const pData = await playerRes.json();
+            return pData;
+          }
+        } catch (e) {
+          console.error(`Error checking player ${name}:`, e);
         }
-      });
+        return null;
+      })
+    );
+
+    // 3. Match code
+    const matchingPlayer = playerChecks.find(p => p && p.auth_code === enteredCode);
+    if (!matchingPlayer) {
+      return res.status(400).json({ error: 'Invalid or expired code. Please run /storeauth in-game and try again.' });
     }
 
-    // 4. Generate or retrieve pending code
-    let code = pendingCodes.get(normalizedUser);
-    if (!code) {
-      code = Math.floor(100000 + Math.random() * 900000);
-      pendingCodes.set(normalizedUser, code);
-      // Update remote scoreboard scores
-      await runCommand(`scoreboard players set ${player.username} storeauth ${code}`);
-      await runCommand(`scoreboard players set ${player.username} storeverified 0`);
-    }
+    const username = matchingPlayer.username;
+    const normalizedUser = username.toLowerCase();
+
+    // 4. Mark verified on server and local session
+    await runCommand(`scoreboard players set ${username} storeverified 1`);
+    verifiedSessions.add(normalizedUser);
+
+    // Send notifications in-game
+    await runCommand(`msg ${username} §5§lOcean SMP §8» §aYour account has been successfully linked to the website!`);
+    await runCommand(`playsound entity.player.levelup voice ${username}`);
 
     res.json({
       success: true,
-      verified: false,
-      code: code
+      player: {
+        username: matchingPlayer.username,
+        uuid: matchingPlayer.uuid,
+        online: matchingPlayer.online,
+        rank: matchingPlayer.rank,
+        balance: matchingPlayer.balance,
+        verified: true
+      }
     });
 
   } catch (error) {
-    console.error('Error in player-check:', error);
-    res.status(500).json({ error: 'Server error checking player connection' });
+    console.error('Error verifying code:', error);
+    res.status(500).json({ error: 'Internal server error during verification' });
   }
 });
 
@@ -203,6 +215,7 @@ app.get('/api/player-info', async (req, res) => {
   if (!username) {
     return res.status(400).json({ error: 'Username is required' });
   }
+  const normalizedUser = username.trim().toLowerCase();
   try {
     const url = `${API_BASE_URL}/api/player?name=${encodeURIComponent(username)}`;
     const response = await fetch(url, {
@@ -212,6 +225,15 @@ app.get('/api/player-info', async (req, res) => {
       return res.status(response.status).json({ error: 'Failed to fetch player info' });
     }
     const data = await response.json();
+    
+    // Auto-verify if the scoreboard storeverified is 1 (player.verified is true)
+    // and they are online
+    if (data.verified === true && data.online === true) {
+      verifiedSessions.add(normalizedUser);
+    } else {
+      verifiedSessions.delete(normalizedUser);
+    }
+    
     res.json(data);
   } catch (error) {
     console.error('Error proxying player info:', error);

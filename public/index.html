@@ -69,14 +69,14 @@
         <div id="connect-form" class="connect-form">
           <div class="form-header">
             <h3>Link Minecraft Account</h3>
-            <p>Enter your username to connect your account and verify in-game.</p>
+            <p>Run <strong>/storeauth</strong> in-game, then enter the 6-digit code below.</p>
           </div>
           
           <div class="input-row" style="margin-bottom: 1.25rem;">
-            <input type="text" id="connect-username-input" placeholder="Minecraft Username" autocomplete="off" style="width: 100%;">
+            <input type="text" id="connect-code-input" placeholder="6-Digit Verification Code" maxlength="6" autocomplete="off" style="width: 100%; text-align: center; font-size: 1.25rem; letter-spacing: 0.1em; font-weight: 600;">
           </div>
           
-          <button id="btn-connect-player" style="width: 100%;">Connect Account</button>
+          <button id="btn-connect-player" style="width: 100%;">Verify & Connect</button>
           <div id="connect-error" class="error-msg hide"></div>
         </div>
 
