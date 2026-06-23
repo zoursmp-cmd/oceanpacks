@@ -13,6 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Cart State
   const cart = {};
 
+  // Search & Filters Configuration
+  let activeCategory = 'all';
+  let searchQuery = '';
+
   // DOM Elements
   const els = {
     // Connect widget elements
@@ -89,7 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 2000);
     }
   });
-  els.verifyCancelBtn.addEventListener('click', cancelConnection);
   els.disconnectBtn.addEventListener('click', handleDisconnect);
   els.modalCloseBtn.addEventListener('click', () => {
     els.modalOverlay.classList.add('hide');
@@ -277,10 +280,6 @@ document.addEventListener('DOMContentLoaded', () => {
       body.appendChild(row);
     });
   }
-
-  // Search & Filters Configuration
-  let activeCategory = 'all';
-  let searchQuery = '';
 
   function initSearchFilters() {
     els.searchInput.addEventListener('input', (e) => {
